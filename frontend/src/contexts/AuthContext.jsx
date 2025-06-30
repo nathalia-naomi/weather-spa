@@ -1,4 +1,5 @@
 import {createContext, useState, useEffect } from "react";
+import {jwtDecode } from 'jwt-decode';
 
 export const AuthContext = createContext();
 
@@ -8,6 +9,34 @@ export const AuthProvider = ({children}) => {
         const storedUser = localStorage.getItem("user");
         return storedUser ? JSON.parse(storedUser) : null;
     });
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const stored = localStorage.getItem('user');
+        console.log('stored', stored)
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                const decoded = jwtDecode(parsed.token);
+                const now = Date.now() / 1000;
+        console.log('decoded', decoded)
+        console.log('decoded.exp', decoded.exp)
+
+                if (decoded.exp && decoded.exp < now) {
+                    console.warn('Token expirado');
+                    localStorage.removeItem('user');
+                    setUser(null);
+                } else {
+                    setUser(parsed);
+                }
+            } catch (e) {
+                console.warn('Token inválido');
+                localStorage.removeItem('user');
+                setUser(null);
+            }
+        }
+        setLoading(false);
+    }, []);
 
     const login = async (username, password) => {
         try {
@@ -34,7 +63,7 @@ export const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }} >
+        <AuthContext.Provider value={{ user, login, logout, loading }} >
             {children}
         </AuthContext.Provider>
     );

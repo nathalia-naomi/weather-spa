@@ -9,7 +9,7 @@ const schema = yup.object().shape({
 	city: yup.string().required('Cidade é obrigatória'),
 });
 
-export default function SearchForm() {
+export default React.memo(function SearchForm() {
 	const inputRef = useRef();
 	const { dispatch } = useContext(WeatherContext);
 	const { user } = useContext(AuthContext);
@@ -64,4 +64,4 @@ export default function SearchForm() {
 			</Button>
 		</>
 	);
-}
+});
